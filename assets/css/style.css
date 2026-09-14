@@ -1,0 +1,425 @@
+:root {
+    --color-background: #0B0F14;
+    --color-surface: #111820;
+    --color-surface-raised: #17212B;
+    --color-border: #26323D;
+    --color-text: #F1F5F9;
+    --color-text-muted: #94A3B8;
+    --color-success: #34D399;
+    --color-warning: #FBBF24;
+    --color-danger: #F87171;
+    --color-accent: #60A5FA;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background: var(--color-background);
+}
+
+body {
+    min-width: 320px;
+    color: var(--color-text);
+    background: var(--color-background);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    line-height: 1.5;
+}
+
+#status-page {
+    width: min(100%, 960px);
+    margin-inline: auto;
+    padding: 64px 24px 80px;
+}
+
+.status-page__header {
+    padding-bottom: 40px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+#page-title,
+.status-section h2,
+.server__name,
+.incident-list__title {
+    margin: 0;
+    color: var(--color-text);
+    font-weight: 650;
+    letter-spacing: -0.02em;
+}
+
+#page-title {
+    font-size: clamp(2rem, 5vw, 2.75rem);
+    line-height: 1.1;
+}
+
+.status-page__summary,
+.server__status,
+.service-list__status,
+.incidents__summary,
+.incident-list__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-muted);
+}
+
+.status-page__summary {
+    margin: 14px 0 0;
+    font-size: 1rem;
+}
+
+.status-page__summary::before,
+.server__status::before,
+.service-list__status::before,
+.incident-list__status::before {
+    width: 0.55rem;
+    height: 0.55rem;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: currentColor;
+    content: "";
+}
+
+.status-section {
+    margin-top: 32px;
+    padding: 28px;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: 5px;
+}
+
+.status-section h2 {
+    margin-bottom: 24px;
+    font-size: 1.125rem;
+    line-height: 1.25;
+}
+
+.server__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 1.5rem;
+    margin-bottom: 24px;
+}
+
+.server__name {
+    font-size: 1.125rem;
+    line-height: 1.35;
+}
+
+.server__status {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.metric-list {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+}
+
+.metric-list__item {
+    min-width: 0;
+    padding: 18px;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: 3px;
+}
+
+.metric-list__label {
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.metric-list__value {
+    min-height: 1.45em;
+    margin: 8px 0 0;
+    overflow-wrap: anywhere;
+    font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+    font-variant-numeric: tabular-nums;
+    font-weight: 650;
+    line-height: 1.2;
+}
+
+.server__specs {
+    margin-top: 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+.server__specs summary {
+    padding: 16px 0;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.server__specs summary:hover {
+    color: var(--color-text);
+}
+
+.server__specs table {
+    width: 100%;
+    min-width: 420px;
+    border-collapse: collapse;
+    color: var(--color-text);
+    font-size: 0.875rem;
+}
+
+.server__specs caption {
+    margin-bottom: 8px;
+    color: var(--color-text-muted);
+    text-align: left;
+}
+
+.server__specs tbody {
+    border-top: 1px solid var(--color-border);
+}
+
+.server__specs th,
+.server__specs td {
+    padding: 12px;
+    border-bottom: 1px solid var(--color-border);
+    text-align: left;
+    vertical-align: top;
+}
+
+.server__specs th {
+    width: 35%;
+    color: var(--color-text-muted);
+    font-weight: 600;
+}
+
+.server__specs td {
+    overflow-wrap: anywhere;
+}
+
+.server__specs[open] {
+    overflow-x: auto;
+}
+
+.service-list,
+.incident-list {
+    display: grid;
+    gap: 10px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.service-list__item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 56px;
+    padding: 14px 16px;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.service-list__name {
+    min-width: 0;
+    overflow-wrap: anywhere;
+    font-weight: 600;
+}
+
+.service-list__status {
+    justify-content: flex-end;
+    flex: 0 1 auto;
+    font-size: 0.875rem;
+    text-align: right;
+}
+
+.uptime__chart {
+    display: flex;
+    min-height: 32px;
+    overflow: hidden;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+}
+
+.uptime__chart > * {
+    min-width: 4px;
+    flex: 1 1 0;
+    background: var(--color-text-muted);
+    border-right: 1px solid var(--color-surface);
+}
+
+.uptime__chart > :last-child {
+    border-right: 0;
+}
+
+.uptime__chart > [data-status="operational"],
+.uptime__chart > [data-status="resolved"] {
+    background: var(--color-success);
+}
+
+.uptime__chart > [data-status="degraded"],
+.uptime__chart > [data-status="investigating"] {
+    background: var(--color-warning);
+}
+
+.uptime__chart > [data-status="outage"],
+.uptime__chart > [data-status="major-outage"] {
+    background: var(--color-danger);
+}
+
+.uptime__chart > [data-status="unknown"],
+.uptime__chart > [data-status="loading"] {
+    background: var(--color-text-muted);
+}
+
+.uptime__details {
+    margin: 18px 0 0;
+}
+
+.uptime__details > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+}
+
+.uptime__details dt,
+.incidents__updated {
+    color: var(--color-text-muted);
+    font-size: 0.875rem;
+}
+
+.uptime__details dd {
+    margin: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.incidents__summary {
+    min-height: 1.5em;
+    margin: -8px 0 20px;
+}
+
+.incident-list__item {
+    padding: 18px;
+    background: var(--color-surface-raised);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+}
+
+.incident-list__item article {
+    display: grid;
+    gap: 8px;
+}
+
+.incident-list__title {
+    font-size: 1rem;
+}
+
+.incident-list__status,
+.incident-list__timestamp {
+    margin: 0;
+    font-size: 0.875rem;
+}
+
+.incident-list__timestamp,
+.incidents__updated time {
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+}
+
+.incidents__updated {
+    margin: 20px 0 0;
+}
+
+[data-status="operational"],
+[data-status="resolved"] {
+    color: var(--color-success);
+}
+
+[data-status="degraded"],
+[data-status="investigating"] {
+    color: var(--color-warning);
+}
+
+[data-status="outage"],
+[data-status="major-outage"] {
+    color: var(--color-danger);
+}
+
+[data-status="unknown"],
+[data-status="loading"] {
+    color: var(--color-text-muted);
+}
+
+:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
+}
+
+@media (max-width: 720px) {
+    .metric-list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 480px) {
+    #status-page {
+        padding: 40px 16px 56px;
+    }
+
+    .status-page__header {
+        padding-bottom: 32px;
+    }
+
+    .status-section {
+        margin-top: 20px;
+        padding: 20px;
+    }
+
+    .status-section h2 {
+        margin-bottom: 20px;
+    }
+
+    .server__header,
+    .service-list__item {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .server__header {
+        margin-bottom: 20px;
+    }
+
+    .service-list__item {
+        gap: 8px;
+    }
+
+    .service-list__status {
+        justify-content: flex-start;
+        text-align: left;
+    }
+
+    .metric-list {
+        grid-template-columns: 1fr;
+    }
+
+    .server__specs {
+        margin-inline: -20px;
+        padding-inline: 20px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
