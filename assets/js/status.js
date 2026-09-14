@@ -1,6 +1,6 @@
 "use strict";
 
-const API_URL = "/api/status";
+const API_URL = "https://api.mofh.dev/api/status";
 const REFRESH_INTERVAL_MS = 60_000;
 const USE_MOCK_DATA = false;
 
