@@ -19,11 +19,13 @@
 
         <section id="server" class="status-section" aria-labelledby="server-title">
             <h2 id="server-title">Server</h2>
+
             <header class="server__header">
                 <h3 id="server-name" class="server__name" data-field="server-name"></h3>
                 <p id="server-status" class="server__status" role="status" aria-live="polite"
                     data-field="server-status">Checking...</p>
             </header>
+
             <dl id="server-metrics" class="metric-list" aria-label="Server metrics">
                 <div class="metric-list__item">
                     <dt class="metric-list__label">CPU</dt>
@@ -42,6 +44,7 @@
                     <dd class="metric-list__value" data-field="temperature"></dd>
                 </div>
             </dl>
+
             <details class="server__specs">
                 <summary>Specs</summary>
                 <table id="server-specs">
@@ -58,22 +61,34 @@
 
         <section id="uptime" class="status-section" aria-labelledby="uptime-title">
             <h2 id="uptime-title">Uptime</h2>
+
+            <p id="uptime-percentage" class="uptime__percentage" data-field="uptime-percentage">--%</p>
+
             <div id="uptime-chart" class="uptime__chart" role="img" aria-label="Uptime history"
                 data-field="uptime-chart"></div>
+
             <dl class="uptime__details">
                 <div>
                     <dt>Last reboot</dt>
-                    <dd><time id="last-reboot" data-field="last-reboot"></time></dd>
+                    <dd>
+                        <time id="last-reboot" data-field="last-reboot"></time>
+                    </dd>
                 </div>
             </dl>
         </section>
 
         <section id="incidents" class="status-section" aria-labelledby="incidents-title">
             <h2 id="incidents-title">Incidents</h2>
+
             <p id="incidents-summary" class="incidents__summary" role="status" aria-live="polite"
                 data-field="incidents-summary"></p>
+
             <ol id="incidents-list" class="incident-list" aria-live="polite"></ol>
-            <p class="incidents__updated">Last update: <time id="last-updated" data-field="last-updated"></time></p>
+
+            <p class="incidents__updated">
+                Last update:
+                <time id="last-updated" data-field="last-updated"></time>
+            </p>
         </section>
     </main>
 
@@ -83,19 +98,26 @@
             <td data-field="value"></td>
         </tr>
     </template>
+
     <template id="service-item-template">
-        <li class="service-list__item"><span class="service-list__name" data-field="name"></span><span
-                class="service-list__status" role="status" data-field="status"></span></li>
+        <li class="service-list__item">
+            <span class="service-list__name" data-field="name"></span>
+            <span class="service-list__status" role="status" data-field="status"></span>
+        </li>
     </template>
+
     <template id="incident-item-template">
         <li class="incident-list__item">
             <article>
                 <h3 class="incident-list__title" data-field="title"></h3>
-                <p class="incident-list__status" data-field="status"></p><time class="incident-list__timestamp"
-                    data-field="timestamp"></time>
+                <p class="incident-list__status" data-field="status"></p>
+                <p class="incident-list__reason" data-field="reason"></p>
+                <p class="incident-list__duration" data-field="duration"></p>
+                <time class="incident-list__timestamp" data-field="timestamp"></time>
             </article>
         </li>
     </template>
+
     <script src="assets/js/status.js" defer></script>
 </body>
 

@@ -5,22 +5,66 @@ const REFRESH_INTERVAL_MS = 60_000;
 const USE_MOCK_DATA = false;
 
 const MOCK_STATUS = {
-    overall: { status: "operational", message: "All Systems Operational.", message_ja: "すべてのシステムが正常動作中。" },
+    overall: {
+        status: "operational",
+        message: "All Systems Operational.",
+        message_ja: "すべてのシステムが正常動作中。"
+    },
     server: {
         name: "ThinkCentre M75q tiny Gen2",
         status: "operational",
-        metrics: { cpu: 23.4, memory: 58.2, disk: 71.3, temperature: 47 },
-        specs: { hostname: "mofh-server", cpu: "AMD Ryzen 5 PRO 5650GE", gpu: "Radeon Graphics (Vega 7)", memory: "8 GB DDR4-3200", storage: "256 GB M.2 NVMe", os: "Ubuntu Server 26.04.1 LTS", architecture: "x86_64", kernel: "7.0.0-31-generic" },
+        metrics: {
+            cpu: 23.4,
+            memory: 58.2,
+            disk: 71.3,
+            temperature: 47
+        },
+        specs: {
+            hostname: "mofh-server",
+            cpu: "AMD Ryzen 5 PRO 5650GE",
+            gpu: "Radeon Graphics (Vega 7)",
+            memory: "8 GB DDR4-3200",
+            storage: "256 GB M.2 NVMe",
+            os: "Ubuntu Server 26.04.1 LTS",
+            architecture: "x86_64",
+            kernel: "7.0.0-31-generic"
+        },
         last_reboot: "2026-09-02T14:31:08+09:00"
     },
-    services: [{ name: "Web Server", status: "operational" }, { name: "Docker", status: "operational" }, { name: "SSH", status: "operational" }],
-    uptime: { percentage: 99.98, history: [{ status: "operational", start: "2026-09-13T16:00:00+09:00", end: "2026-09-13T17:00:00+09:00" }] },
+    services: [
+        { name: "Web Server", status: "operational" },
+        { name: "Docker", status: "operational" },
+        { name: "SSH", status: "operational" }
+    ],
+    uptime: {
+        percentage: 99.98,
+        history: [
+            {
+                date: "2026-09-13",
+                uptime: 100,
+                total_downtime_seconds: 0,
+                incident_count: 0
+            }
+        ]
+    },
     incidents: [],
     updated_at: "2026-09-14T17:30:00+09:00"
 };
 
-const STATUS_VALUES = new Set(["operational", "degraded", "outage", "unknown"]);
-const INCIDENT_STATUS_VALUES = new Set([...STATUS_VALUES, "investigating", "resolved", "major-outage"]);
+const STATUS_VALUES = new Set([
+    "operational",
+    "degraded",
+    "outage",
+    "unknown"
+]);
+
+const INCIDENT_STATUS_VALUES = new Set([
+    ...STATUS_VALUES,
+    "investigating",
+    "resolved",
+    "major-outage"
+]);
+
 const STATUS_LABELS = {
     operational: "Operational",
     degraded: "Degraded",
@@ -30,6 +74,7 @@ const STATUS_LABELS = {
     resolved: "Resolved",
     "major-outage": "Major outage"
 };
+
 const SPEC_LABELS = {
     hostname: "Hostname",
     cpu: "CPU",
@@ -48,31 +93,43 @@ function getRefs() {
         overallStatus: document.querySelector("#overall-status"),
         serverName: document.querySelector("#server-name"),
         serverStatus: document.querySelector("#server-status"),
+
         metrics: {
             cpu: document.querySelector('[data-field="cpu-usage"]'),
             memory: document.querySelector('[data-field="memory-usage"]'),
             disk: document.querySelector('[data-field="disk-usage"]'),
             temperature: document.querySelector('[data-field="temperature"]')
         },
+
         specsBody: document.querySelector("#server-specs-body"),
         specsTemplate: document.querySelector("#server-spec-row-template"),
+
         servicesList: document.querySelector("#services-list"),
         serviceTemplate: document.querySelector("#service-item-template"),
+
+        uptimePercentage: document.querySelector("#uptime-percentage"),
         uptimeChart: document.querySelector("#uptime-chart"),
+
         lastReboot: document.querySelector("#last-reboot"),
+
         incidentsSummary: document.querySelector("#incidents-summary"),
         incidentsList: document.querySelector("#incidents-list"),
         incidentTemplate: document.querySelector("#incident-item-template"),
+
         lastUpdated: document.querySelector("#last-updated")
     };
 }
 
 function isRecord(value) {
-    return value !== null && typeof value === "object" && !Array.isArray(value);
+    return value !== null &&
+        typeof value === "object" &&
+        !Array.isArray(value);
 }
 
 function normalizeStatus(value, allowedStatuses = STATUS_VALUES) {
-    return typeof value === "string" && allowedStatuses.has(value) ? value : "unknown";
+    return typeof value === "string" && allowedStatuses.has(value)
+        ? value
+        : "unknown";
 }
 
 function statusLabel(status) {
@@ -95,16 +152,37 @@ function setStatus(element, status, text) {
 }
 
 function formatMetric(value, unit) {
-    const numericValue = typeof value === "number" ? value : Number(value);
+    const numericValue = typeof value === "number"
+        ? value
+        : Number(value);
+
     if (!Number.isFinite(numericValue)) {
         return `--${unit}`;
     }
 
-    return `${new Intl.NumberFormat("ja-JP", { maximumFractionDigits: 1 }).format(numericValue)}${unit}`;
+    return `${new Intl.NumberFormat("ja-JP", {
+        maximumFractionDigits: 1
+    }).format(numericValue)}${unit}`;
+}
+
+function formatPercentage(value) {
+    const numericValue = Number(value);
+
+    if (!Number.isFinite(numericValue)) {
+        return "--%";
+    }
+
+    return `${new Intl.NumberFormat("ja-JP", {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(numericValue)}%`;
 }
 
 function formatTimestamp(value) {
-    if (typeof value !== "string" || Number.isNaN(Date.parse(value))) {
+    if (
+        typeof value !== "string" ||
+        Number.isNaN(Date.parse(value))
+    ) {
         return null;
     }
 
@@ -118,9 +196,52 @@ function formatTimestamp(value) {
         second: "2-digit",
         hourCycle: "h23"
     }).formatToParts(new Date(value));
-    const part = (type) => parts.find((item) => item.type === type)?.value;
+
+    const part = (type) =>
+        parts.find((item) => item.type === type)?.value;
 
     return `${part("year")}/${part("month")}/${part("day")} ${part("hour")}:${part("minute")}:${part("second")} JST`;
+}
+
+function formatDuration(seconds) {
+    const numericSeconds = Number(seconds);
+
+    if (!Number.isFinite(numericSeconds) || numericSeconds < 0) {
+        return "--";
+    }
+
+    const totalSeconds = Math.round(numericSeconds);
+    const hours = Math.floor(totalSeconds / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const remainingSeconds = totalSeconds % 60;
+
+    if (hours > 0) {
+        return `${hours}h ${minutes}m ${remainingSeconds}s`;
+    }
+
+    if (minutes > 0) {
+        return `${minutes}m ${remainingSeconds}s`;
+    }
+
+    return `${remainingSeconds}s`;
+}
+
+function getUptimeStatus(value) {
+    const uptime = Number(value);
+
+    if (!Number.isFinite(uptime)) {
+        return "unknown";
+    }
+
+    if (uptime >= 99.9) {
+        return "operational";
+    }
+
+    if (uptime >= 99) {
+        return "degraded";
+    }
+
+    return "outage";
 }
 
 function renderTime(element, value) {
@@ -129,6 +250,7 @@ function renderTime(element, value) {
     }
 
     const formatted = formatTimestamp(value);
+
     if (formatted) {
         element.dateTime = value;
         element.textContent = formatted;
@@ -141,18 +263,45 @@ function renderTime(element, value) {
 function renderOverallStatus(overall) {
     const safeOverall = isRecord(overall) ? overall : {};
     const status = normalizeStatus(safeOverall.status);
-    const messages = [safeOverall.message, safeOverall.message_ja]
-        .filter((message) => typeof message === "string" && message.trim() !== "");
 
-    setStatus(refs.overallStatus, status, messages.join(" ") || statusLabel(status));
+    const messages = [
+        safeOverall.message,
+        safeOverall.message_ja
+    ].filter(
+        (message) =>
+            typeof message === "string" &&
+            message.trim() !== ""
+    );
+
+    setStatus(
+        refs.overallStatus,
+        status,
+        messages.join(" ") || statusLabel(status)
+    );
 }
 
 function renderMetrics(metrics) {
     const safeMetrics = isRecord(metrics) ? metrics : {};
-    setText(refs.metrics.cpu, formatMetric(safeMetrics.cpu, "%"));
-    setText(refs.metrics.memory, formatMetric(safeMetrics.memory, "%"));
-    setText(refs.metrics.disk, formatMetric(safeMetrics.disk, "%"));
-    setText(refs.metrics.temperature, formatMetric(safeMetrics.temperature, "°C"));
+
+    setText(
+        refs.metrics.cpu,
+        formatMetric(safeMetrics.cpu, "%")
+    );
+
+    setText(
+        refs.metrics.memory,
+        formatMetric(safeMetrics.memory, "%")
+    );
+
+    setText(
+        refs.metrics.disk,
+        formatMetric(safeMetrics.disk, "%")
+    );
+
+    setText(
+        refs.metrics.temperature,
+        formatMetric(safeMetrics.temperature, "°C")
+    );
 }
 
 function renderSpecs(specs) {
@@ -161,12 +310,26 @@ function renderSpecs(specs) {
     }
 
     const safeSpecs = isRecord(specs) ? specs : {};
+
     const rows = Object.entries(SPEC_LABELS)
-        .filter(([key]) => safeSpecs[key] !== null && safeSpecs[key] !== undefined && String(safeSpecs[key]).trim() !== "")
+        .filter(
+            ([key]) =>
+                safeSpecs[key] !== null &&
+                safeSpecs[key] !== undefined &&
+                String(safeSpecs[key]).trim() !== ""
+        )
         .map(([key, label]) => {
-            const fragment = refs.specsTemplate.content.cloneNode(true);
-            fragment.querySelector('[data-field="label"]').textContent = label;
-            fragment.querySelector('[data-field="value"]').textContent = String(safeSpecs[key]);
+            const fragment =
+                refs.specsTemplate.content.cloneNode(true);
+
+            fragment.querySelector(
+                '[data-field="label"]'
+            ).textContent = label;
+
+            fragment.querySelector(
+                '[data-field="value"]'
+            ).textContent = String(safeSpecs[key]);
+
             return fragment;
         });
 
@@ -177,8 +340,19 @@ function renderServer(server) {
     const safeServer = isRecord(server) ? server : {};
     const status = normalizeStatus(safeServer.status);
 
-    setText(refs.serverName, typeof safeServer.name === "string" ? safeServer.name : "");
-    setStatus(refs.serverStatus, status, statusLabel(status));
+    setText(
+        refs.serverName,
+        typeof safeServer.name === "string"
+            ? safeServer.name
+            : ""
+    );
+
+    setStatus(
+        refs.serverStatus,
+        status,
+        statusLabel(status)
+    );
+
     renderMetrics(safeServer.metrics);
     renderSpecs(safeServer.specs);
     renderTime(refs.lastReboot, safeServer.last_reboot);
@@ -189,14 +363,32 @@ function renderServices(services) {
         return;
     }
 
-    const items = Array.isArray(services) ? services : [];
-    const fragments = items.filter(isRecord).map((service) => {
-        const fragment = refs.serviceTemplate.content.cloneNode(true);
+    const items = Array.isArray(services)
+        ? services
+            .filter(isRecord)
+        : [];
+
+    const fragments = items.map((service) => {
+        const fragment =
+            refs.serviceTemplate.content.cloneNode(true);
+
         const status = normalizeStatus(service.status);
-        fragment.querySelector('[data-field="name"]').textContent = typeof service.name === "string" ? service.name : "Unnamed service";
-        const statusElement = fragment.querySelector('[data-field="status"]');
+
+        fragment.querySelector(
+            '[data-field="name"]'
+        ).textContent =
+            typeof service.name === "string"
+                ? service.name
+                : "Unnamed service";
+
+        const statusElement =
+            fragment.querySelector(
+                '[data-field="status"]'
+            );
+
         statusElement.dataset.status = status;
         statusElement.textContent = statusLabel(status);
+
         return fragment;
     });
 
@@ -204,30 +396,85 @@ function renderServices(services) {
 }
 
 function renderUptime(uptime) {
-    if (!refs.uptimeChart) {
-        return;
-    }
+    const safeUptime = isRecord(uptime)
+        ? uptime
+        : {};
 
-    const safeUptime = isRecord(uptime) ? uptime : {};
-    const history = Array.isArray(safeUptime.history) ? safeUptime.history.filter(isRecord) : [];
+    const percentage = safeUptime.percentage;
+
+    setText(
+        refs.uptimePercentage,
+        formatPercentage(percentage)
+    );
+
+    const history = Array.isArray(safeUptime.history)
+        ? safeUptime.history.filter(isRecord)
+        : [];
+
     if (history.length === 0) {
         refs.uptimeChart.replaceChildren();
-        refs.uptimeChart.textContent = "No uptime history available.";
+        refs.uptimeChart.textContent =
+            "No uptime history available.";
         refs.uptimeChart.dataset.status = "unknown";
-        refs.uptimeChart.setAttribute("aria-label", "No uptime history available");
+        refs.uptimeChart.setAttribute(
+            "aria-label",
+            "No uptime history available"
+        );
         return;
     }
 
     const blocks = history.map((entry) => {
         const block = document.createElement("span");
-        const status = normalizeStatus(entry.status);
+
+        const status = getUptimeStatus(entry.uptime);
+
         block.dataset.status = status;
-        block.title = statusLabel(status);
+
+        const date =
+            typeof entry.date === "string"
+                ? entry.date
+                : "--";
+
+        const uptimeText =
+            formatPercentage(entry.uptime);
+
+        const downtime =
+            Number(entry.total_downtime_seconds);
+
+        const incidents =
+            Number(entry.incident_count);
+
+        const downtimeText =
+            Number.isFinite(downtime)
+                ? formatDuration(downtime)
+                : "--";
+
+        const incidentText =
+            Number.isFinite(incidents)
+                ? String(incidents)
+                : "--";
+
+        block.title =
+            `${date} — Uptime ${uptimeText} / ` +
+            `Downtime ${downtimeText} / ` +
+            `Incidents ${incidentText}`;
+
+        block.setAttribute(
+            "aria-label",
+            block.title
+        );
+
         return block;
     });
+
     refs.uptimeChart.replaceChildren(...blocks);
+
     refs.uptimeChart.removeAttribute("data-status");
-    refs.uptimeChart.setAttribute("aria-label", `Uptime history: ${history.length} interval${history.length === 1 ? "" : "s"}`);
+
+    refs.uptimeChart.setAttribute(
+        "aria-label",
+        `Uptime history: ${history.length} days`
+    );
 }
 
 function renderIncidents(incidents) {
@@ -235,23 +482,87 @@ function renderIncidents(incidents) {
         return;
     }
 
-    const items = Array.isArray(incidents) ? incidents.filter(isRecord) : [];
-    setText(refs.incidentsSummary, items.length === 0 ? "No incidents reported." : `${items.length} incident${items.length === 1 ? "" : "s"} reported.`);
-    refs.incidentsSummary.dataset.status = items.length === 0 ? "operational" : "unknown";
+    const items = Array.isArray(incidents)
+        ? incidents.filter(isRecord)
+        : [];
+
+    setText(
+        refs.incidentsSummary,
+        items.length === 0
+            ? "No incidents reported."
+            : `${items.length} incident${items.length === 1 ? "" : "s"} reported.`
+    );
+
+    refs.incidentsSummary.dataset.status =
+        items.length === 0
+            ? "operational"
+            : "unknown";
 
     const fragments = items.map((incident) => {
-        const fragment = refs.incidentTemplate.content.cloneNode(true);
-        const status = normalizeStatus(incident.status, INCIDENT_STATUS_VALUES);
-        fragment.querySelector('[data-field="title"]').textContent = typeof incident.title === "string" ? incident.title : "Untitled incident";
-        const statusElement = fragment.querySelector('[data-field="status"]');
+        const fragment =
+            refs.incidentTemplate.content.cloneNode(true);
+
+        const status =
+            normalizeStatus(
+                String(incident.status ?? "").toLowerCase(),
+                INCIDENT_STATUS_VALUES
+            );
+
+        const service =
+            typeof incident.service === "string"
+                ? incident.service
+                : "Unknown service";
+
+        const reason =
+            typeof incident.reason === "string"
+                ? incident.reason
+                : "Unknown reason";
+
+        const startedAt =
+            typeof incident.started_at === "string"
+                ? incident.started_at
+                : null;
+
+        const duration =
+            formatDuration(incident.duration);
+
+        fragment.querySelector(
+            '[data-field="title"]'
+        ).textContent = service;
+
+        const statusElement =
+            fragment.querySelector(
+                '[data-field="status"]'
+            );
+
         statusElement.dataset.status = status;
         statusElement.textContent = statusLabel(status);
-        const timestampElement = fragment.querySelector('[data-field="timestamp"]');
-        const timestamp = formatTimestamp(incident.timestamp);
-        timestampElement.textContent = timestamp || "--";
-        if (timestamp) {
-            timestampElement.dateTime = incident.timestamp;
+
+        fragment.querySelector(
+            '[data-field="reason"]'
+        ).textContent = reason;
+
+        fragment.querySelector(
+            '[data-field="duration"]'
+        ).textContent = `Duration: ${duration}`;
+
+        const timestampElement =
+            fragment.querySelector(
+                '[data-field="timestamp"]'
+            );
+
+        const timestamp =
+            formatTimestamp(startedAt);
+
+        timestampElement.textContent =
+            timestamp || "--";
+
+        if (timestamp && startedAt) {
+            timestampElement.dateTime = startedAt;
+        } else {
+            timestampElement.removeAttribute("datetime");
         }
+
         return fragment;
     });
 
@@ -263,7 +574,10 @@ function renderLastUpdated(updatedAt) {
 }
 
 function renderStatus(data) {
-    const safeData = isRecord(data) ? data : {};
+    const safeData = isRecord(data)
+        ? data
+        : {};
+
     renderOverallStatus(safeData.overall);
     renderServer(safeData.server);
     renderServices(safeData.services);
@@ -273,16 +587,33 @@ function renderStatus(data) {
 }
 
 function renderUnavailable() {
-    setStatus(refs.overallStatus, "unknown", "Status unavailable.");
+    setStatus(
+        refs.overallStatus,
+        "unknown",
+        "Status unavailable."
+    );
+
     setText(refs.serverName, "");
-    setStatus(refs.serverStatus, "unknown", "Status unavailable.");
+
+    setStatus(
+        refs.serverStatus,
+        "unknown",
+        "Status unavailable."
+    );
+
     renderMetrics({});
     renderSpecs({});
     renderServices([]);
     renderUptime({});
-    setText(refs.incidentsSummary, "Incident status unavailable.");
+
+    setText(
+        refs.incidentsSummary,
+        "Incident status unavailable."
+    );
+
     refs.incidentsSummary.dataset.status = "unknown";
     refs.incidentsList.replaceChildren();
+
     renderTime(refs.lastReboot, null);
     renderTime(refs.lastUpdated, null);
 }
@@ -293,11 +624,16 @@ async function fetchStatus() {
     }
 
     const response = await fetch(API_URL, {
-        headers: { Accept: "application/json" },
+        headers: {
+            Accept: "application/json"
+        },
         cache: "no-store"
     });
+
     if (!response.ok) {
-        throw new Error(`Status API returned ${response.status}`);
+        throw new Error(
+            `Status API returned ${response.status}`
+        );
     }
 
     return response.json();
@@ -307,24 +643,37 @@ async function refreshStatus() {
     try {
         renderStatus(await fetchStatus());
     } catch (error) {
-        console.error("Unable to refresh status:", error);
+        console.error(
+            "Unable to refresh status:",
+            error
+        );
+
         renderUnavailable();
     }
 }
 
 function start() {
     refs = getRefs();
+
     refreshStatus();
+
     window.setInterval(() => {
         if (document.visibilityState === "visible") {
             refreshStatus();
         }
     }, REFRESH_INTERVAL_MS);
-    document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") {
-            refreshStatus();
+
+    document.addEventListener(
+        "visibilitychange",
+        () => {
+            if (document.visibilityState === "visible") {
+                refreshStatus();
+            }
         }
-    });
+    );
 }
 
-document.addEventListener("DOMContentLoaded", start);
+document.addEventListener(
+    "DOMContentLoaded",
+    start
+);
