@@ -11,6 +11,7 @@
 </head>
 
 <body>
+    <canvas id="dot-background" aria-hidden="true"></canvas>
     <main id="status-page" aria-labelledby="page-title">
         <header class="status-page__header">
             <h1 id="page-title">mofh Status</h1>
@@ -93,6 +94,10 @@
         </section>
     </main>
 
+    <footer class="status-section footer-sec">
+        <a href="https://mofh.dev"><p><small>&copy; 2026 mofh.dev</small></p></a>
+    </footer>
+
     <template id="server-spec-row-template">
         <tr>
             <th scope="row" data-field="label"></th>
@@ -120,6 +125,7 @@
     </template>
 
     <script src="assets/js/status.js" defer></script>
+    <script src="assets/js/dot-background.js"></script>
 </body>
 
 </html>
